@@ -194,9 +194,9 @@ class EntryProcessor(object):
             'today': '%i-%02i-%02i'%(year,month,day),
             'entry_date': self.pub_date.date().isoformat(),
             'id': self.hashed,
-            'entry_title': re.sub(BADFNCHARS,'_',entry.get('title')),
+            'entry_title': re.sub(BADFNCHARS,'_',entry.get('title').strip()),
             'feed_href': re.sub(BADFNCHARS,'_',feed.href.split('://')[-1]),
-            'feed_title': re.sub(BADFNCHARS,'_',feed.feed.get('title',feed.href)),
+            'feed_title': re.sub(BADFNCHARS,'_',feed.feed.get('title',feed.href).strip()),
             'filename_extension': FILE_TYPES.get(entry.get('type')),
         }
         return args.filename_format.format(**subst)
