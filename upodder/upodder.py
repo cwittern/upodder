@@ -11,6 +11,7 @@ import logging
 import re
 import requests
 import argparse
+import eyed3
 import shutil # To get around "cross-device" rename error when moving to dest. dir.
 from datetime import datetime as dt
 from sqlobject import SQLObject, sqlite, DateTimeCol, UnicodeCol
@@ -157,7 +158,27 @@ class EntryProcessor(object):
             except KeyboardInterrupt:
                 print("\nQuitting")
                 sys.exit()
-
+        # add tags
+        audiofile = eyed3.load(downloadto)
+        try:
+            if audiofile.tag is None:
+                audiofile.initTag(version=(2, 3, 0))  # create as v2.3
+            else:
+                audiofile.tag.version = (2, 3, 0)     # upgrade existing v2.2 → v2.3
+            tag = audiofile.tag
+            tag.title = entry.get('title')
+            tag.album = feed.feed.get('title',feed.href)
+            tag.artist = entry.get('author', feed.feed.get('author'))
+            tag.cd_id = self.hashed.encode("ascii")
+            tag.audio_file_url = enclosure['href']
+            tag.track_num = entry.get('itunes_episode', 1)
+            t = entry.get('published_parsed')
+            date = eyed3.core.Date(t.tm_year, t.tm_mon, t.tm_mday)
+            #tag.date= time.strftime('%Y-%m-%dT%H:%M:%S',  entry.get('published_parsed'))
+            tag.recording_date = date
+            tag.save()
+        except:
+            pass
         # Move downloaded file to its final destination
         moveto = expanduser(args.podcastdir) + os.sep + self._generate_filename(entry, feed)
         l.debug("Moving {%s} to {%s}"%(downloadto,moveto))
