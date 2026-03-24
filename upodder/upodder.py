@@ -38,13 +38,15 @@ parser.add_argument("--quiet", help="Only output errors.",
                     action="store_true")
 parser.add_argument('--user-agent', '-A', default='upodder',
     help="Set custom User-Agent string.")
+parser.add_argument('--filename-format', '-f', default='{entry_title}.{filename_extension}',
+    help="File name format.")
 args = parser.parse_args()
 
 YES = [1,"1","on","yes","Yes","YES","y","Y","true","True","TRUE","t","T"]
 CONFIGCOMMENT = ['#',';','$',':','"',"'"]
 BADFNCHARS = re.compile(r'[^\w]+')
 TEMPDIR = '/tmp/upodder'
-FILENAME = '{entry_title}.{filename_extension}'
+#FILENAME = '{entry_title}.{filename_extension}'
 
 # Initializing logging
 if args.quiet:
@@ -176,7 +178,7 @@ class EntryProcessor(object):
             'feed_title': re.sub(BADFNCHARS,'_',feed.feed.get('title',feed.href)),
             'filename_extension': FILE_TYPES.get(entry.get('type')),
         }
-        return FILENAME.format(**subst)
+        return args.filename_format.format(**subst)
 
 def process_feed(url):
     l.info('Downloading feed: %s' % url)
